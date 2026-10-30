@@ -1,0 +1,1641 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NetChecker</title>
+<meta name="description" content="NetChecker: Dispositivo futurista de diagnóstico y monitoreo de redes en tiempo real en TEINCO.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><defs><linearGradient id='g' x1='6' y1='4' x2='44' y2='46' gradientUnits='userSpaceOnUse'><stop offset='0' stop-color='%2322d3ee'/><stop offset='.55' stop-color='%236366f1'/><stop offset='1' stop-color='%238b5cf6'/></linearGradient></defs><rect width='48' height='48' rx='13' fill='url(%23g)'/><path d='M12.5 25.5 21 34 36 14.5' stroke='white' stroke-width='3.6' stroke-linecap='round' stroke-linejoin='round' fill='none'/><circle cx='12.5' cy='25.5' r='4' fill='white'/><circle cx='21' cy='34' r='4' fill='white'/><circle cx='36' cy='14.5' r='4' fill='white'/></svg>">
+<script>(function(){try{if(localStorage.getItem("nc-theme")==="light"){document.documentElement.setAttribute("data-theme","light");}}catch(e){}})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================================
+   NETCHECKER · TIENDA Y PLATAFORMA INTEGRADA
+   Sistema visual: minimalista, limpio y tipográfico (estilo Vercel / Apple).
+   Mobile-first: los estilos base son para móvil; los min-width amplían.
+   Sin sombras decorativas, sin bordes de neón, sin animaciones continuas.
+   ========================================================================== */
+
+/* ---------- Tokens ---------- */
+:root {
+  --bg: #0B0F19;
+  --surface: #0F1524;
+  --surface-2: #141B2D;
+  --border: #1e293b;
+  --border-strong: #334155;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --accent: #38bdf8;
+  --ok: #34d399;
+  --warn: #fbbf24;
+  --bad: #f87171;
+  --on-solid: #0B0F19;            /* texto sobre botón sólido (fondo = --text) */
+  --overlay-bg: rgba(10, 10, 10, 0.72);   /* etiquetas sobre video: iguales en ambos temas */
+  --live: #3fcf8e;
+  --card-bg: rgba(15, 23, 42, 0.55);   /* slate-900 translúcido */
+  --card-bd: #1e293b;                  /* slate-800 */
+  --radius-lg: 12px;
+  --radius-md: 10px;
+  --radius-sm: 6px;
+  --font-display: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --grid: rgba(148, 163, 184, 0.07);   /* retícula técnica del hero */
+  --header-h: 64px;
+  color-scheme: dark;
+}
+
+html[data-theme="light"] {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --surface-2: #f1f5f9;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --text: #0f172a;
+  --muted: #475569;
+  --accent: #0369a1;
+  --ok: #047857;
+  --warn: #b45309;
+  --bad: #b91c1c;
+  --on-solid: #ffffff;
+  --card-bg: rgba(241, 245, 249, 0.7);
+  --card-bd: #e2e8f0;
+  --grid: rgba(15, 23, 42, 0.06);
+  color-scheme: light;
+}
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--header-h) + 16px);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin: 0 0 0.5em;
+  text-wrap: balance;
+}
+h1 { font-size: clamp(2.25rem, 7vw, 4rem); font-weight: 700; letter-spacing: -0.045em; line-height: 1.05; }
+h2 { font-size: clamp(1.75rem, 4.5vw, 2.5rem); letter-spacing: -0.04em; }
+h3 { font-size: 1.2rem; letter-spacing: -0.02em; }
+h4 { font-size: 0.95rem; letter-spacing: -0.01em; }
+
+p { margin: 0 0 1em; }
+a { color: inherit; text-decoration: none; }
+img, video, svg { max-width: 100%; display: block; }
+.mono { font-family: var(--font-mono); }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+@media (min-width: 640px) { .container { padding: 0 28px; } }
+
+/* Segunda línea de los títulos: mismo peso, tono atenuado (jerarquía tipográfica, sin degradados) */
+.gradient-text { color: var(--muted); }
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  margin-bottom: 20px;
+}
+
+/* ---------- Topbar ---------- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  backdrop-filter: saturate(180%) blur(14px);
+  border-bottom: 1px solid var(--border);
+}
+.topbar .container { max-width: 1360px; }
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: var(--header-h);
+}
+
+.brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; font-weight: 700; }
+.brand-logo-svg { width: 34px; height: 34px; flex-shrink: 0; border-radius: 9px; }
+.brand-text-wrap { display: flex; flex-direction: column; gap: 3px; line-height: 1; }
+.brand-text {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--muted);
+}
+.brand-part-net { font-weight: 700; color: var(--text); }
+.brand-sub {
+  display: none;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+@media (min-width: 520px) { .brand-sub { display: block; } }
+
+/* Navegación: menú desplegable en móvil/tablet, en línea desde 1360px */
+.nav-links { display: none; align-items: center; gap: 2px; }
+.nav-links.active {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  padding: 8px 20px 16px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.nav-links a {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--muted);
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+.nav-links a:hover { color: var(--text); background: var(--surface-2); }
+.nav-links a.active { color: var(--text); background: var(--surface-2); }
+
+.nav-actions { display: flex; align-items: center; gap: 10px; }
+
+.nav-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--text);
+  color: var(--on-solid);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.nav-btn:hover { opacity: 0.88; }
+.nav-btn:active { transform: scale(0.98); }
+@media (min-width: 400px) { .nav-btn { display: inline-flex; } }
+@media (max-width: 519px) { .nav-btn svg { display: none; } }
+
+.menu-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.menu-toggle:hover { border-color: var(--border-strong); background: var(--surface-2); }
+
+@media (min-width: 1360px) {
+  .nav-links, .nav-links.active {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    position: static;
+    padding: 0;
+    background: none;
+    border: 0;
+  }
+  .nav-links a { padding: 8px 10px; font-size: 0.875rem; }
+  .menu-toggle { display: none; }
+}
+
+/* ---------- Botones ---------- */
+.btn-primary, .btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1;
+  cursor: pointer;
+  transition: opacity 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.btn-primary { background: var(--text); color: var(--on-solid); border: 1px solid var(--text); }
+.btn-primary:hover { opacity: 0.88; }
+.btn-secondary { background: transparent; color: var(--text); border: 1px solid var(--border-strong); }
+.btn-secondary:hover { background: var(--surface-2); }
+.btn-secondary.btn-dash { border-color: var(--accent); color: var(--accent); }
+.btn-secondary.btn-dash:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.btn-primary:active, .btn-secondary:active { transform: scale(0.98); }
+.btn-block { width: 100%; }
+
+/* ---------- Hero ---------- */
+.hero { position: relative; overflow: hidden; padding: 48px 0 56px; }
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(to right, var(--grid) 1px, transparent 1px), linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
+  background-size: 48px 48px;
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 0%, #000 20%, transparent 75%);
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 0%, #000 20%, transparent 75%);
+  pointer-events: none;
+}
+.hero .container { position: relative; }
+.hero-grid { display: grid; grid-template-columns: 1fr; gap: 40px; align-items: center; }
+.hero-content { min-width: 0; }
+.hero h1 { margin: 0 0 20px; }
+.hero h1 .gradient-text { display: block; width: fit-content; max-width: 100%; }
+.hero-desc { color: var(--muted); font-size: 1.0625rem; max-width: 34rem; margin-bottom: 28px; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+
+@media (min-width: 992px) {
+  .hero { padding: 96px 0 80px; }
+  .hero-grid { grid-template-columns: 1fr 1.1fr; gap: 56px; }
+}
+
+/* Video / imagen destacada */
+.futuristic-showcase {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--surface);
+}
+.futuristic-showcase::before {
+  content: "";
+  display: block;
+  height: 32px;
+  border-bottom: 1px solid var(--border);
+  background:
+    radial-gradient(circle at 16px 16px, var(--border-strong) 4px, transparent 4.5px),
+    radial-gradient(circle at 32px 16px, var(--border-strong) 4px, transparent 4.5px),
+    radial-gradient(circle at 48px 16px, var(--border-strong) 4px, transparent 4.5px),
+    var(--surface-2);
+}
+.showcase-inner { position: relative; background: var(--surface); }
+.device-render { width: 100%; height: auto; display: block; }
+
+.live-badge-overlay,
+.hero-video-label {
+  position: absolute;
+  top: 14px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--overlay-bg);
+  color: #fafafa;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+.live-badge-overlay { right: 14px; }
+.hero-video-label { left: 14px; }
+
+.hero-sound-toggle {
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  z-index: 3;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: var(--overlay-bg);
+  color: #fafafa;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.hero-sound-toggle:hover { border-color: rgba(255, 255, 255, 0.4); }
+.icon-hidden { display: none; }
+
+.hero-video { width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; display: block; }
+
+.pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--live);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse { 50% { opacity: 0.35; } }
+
+/* ---------- Estadísticas ---------- */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  margin-top: 48px;
+  overflow: hidden;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+.stat-item { padding: 16px 18px; background: var(--surface); }
+@media (min-width: 640px) { .stats-bar { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 992px) and (max-width: 1199px) { .stats-bar { grid-template-columns: repeat(2, 1fr); } }
+.stat-value {
+  font-family: var(--font-mono);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.stat-label { margin-top: 4px; color: var(--muted); font-size: 0.8125rem; }
+
+/* ---------- Secciones ---------- */
+.section { position: relative; padding: 64px 0; border-top: 1px solid var(--border); }
+@media (min-width: 992px) { .section { padding: 96px 0; } }
+.section-title { max-width: 44rem; margin-bottom: 40px; text-align: left; }
+.section-title h2 { margin-bottom: 12px; }
+.section-title p { max-width: 36rem; margin: 0; color: var(--muted); }
+
+.frame-narrow { max-width: 900px; margin: 0 auto; }
+.frame-wide { max-width: 1100px; margin: 0 auto; }
+
+/* ---------- Productos ---------- */
+.product-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+@media (min-width: 992px) {
+  .product-grid { grid-template-columns: repeat(3, 1fr); }
+  .product-card { border-bottom: 0; border-right: 1px solid var(--border); }
+  .product-card:last-child { border-right: 0; }
+}
+
+.product-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  background: transparent;
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.15s ease;
+}
+.product-card:last-child { border-bottom: 0; }
+.product-card:hover { background: var(--surface-2); }
+.product-card--featured { background: var(--surface-2); box-shadow: inset 0 2px 0 var(--accent); }
+.product-card--featured:hover { background: var(--surface-2); }
+
+.product-tag {
+  position: absolute;
+  top: 34px;
+  right: 34px;
+  z-index: 2;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--overlay-bg);
+  color: #fafafa;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+.product-tag--featured { background: var(--accent); color: var(--on-solid); }
+
+.product-img {
+  position: relative;
+  height: 200px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.product-img img { width: 100%; height: 100%; object-fit: cover; filter: saturate(0.7) contrast(1.05); }
+.product-img-icon {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: var(--overlay-bg);
+  color: #fafafa;
+}
+/* Si una foto externa no carga (sin Internet) se muestra un fondo neutro en lugar de una imagen rota */
+.product-img.is-fallback { background: var(--surface-2); }
+.product-img.is-fallback img { display: none; }
+
+.product-desc { margin: 0; color: var(--muted); font-size: 0.9rem; }
+.product-price {
+  margin: 14px 0;
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.product-price span { font-size: 0.8125rem; font-weight: 400; letter-spacing: 0; color: var(--muted); }
+
+.product-features {
+  list-style: none;
+  margin: 0 0 20px;
+  padding: 0;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+.product-features li { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+.product-features li::before { content: "✓"; flex-shrink: 0; color: var(--text); font-weight: 600; }
+.product-features--spaced { margin-top: 20px; margin-bottom: 0; }
+.product-card .btn-block { margin-top: auto; }
+.product-card .btn-primary { background: transparent; color: var(--text); border-color: var(--border-strong); }
+.product-card .btn-primary:hover { background: var(--surface-2); opacity: 1; }
+.product-card--featured .btn-primary { background: var(--text); color: var(--on-solid); border-color: var(--text); }
+.product-card--featured .btn-primary:hover { opacity: 0.88; background: var(--text); }
+
+/* ---------- Medios / video ---------- */
+.media-box {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 28px;
+  align-items: center;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+@media (min-width: 640px) { .media-box { padding: 32px; } }
+@media (min-width: 992px) { .media-box { grid-template-columns: 1fr 1fr; gap: 40px; } }
+.media-box h3 { margin-bottom: 12px; }
+.media-text { color: var(--muted); }
+
+.video-frame-wrap { position: relative; }
+.video-container {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%;               /* 16:9 */
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #000;
+}
+.video-container iframe, .video-container video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  object-fit: cover;
+  background: #000;
+}
+
+.showcase-caption {
+  margin: 16px 0 0;
+  text-align: center;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+}
+
+/* ---------- Panel NetChecker Live (incrustado) ---------- */
+.embedded-dashboard {
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  transition: opacity 0.3s ease, filter 0.3s ease;
+}
+@media (min-width: 640px) { .embedded-dashboard { padding: 28px; } }
+.embedded-dashboard.is-paused { opacity: 0.6; filter: grayscale(1); }
+
+.dash-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding-bottom: 18px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+.dash-title { margin: 0; font-size: 1.1rem; }
+.dash-target { font-size: 0.8125rem; color: var(--muted); }
+.dash-header-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+
+.power-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 14px 5px 5px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.power-toggle:hover { border-color: var(--border-strong); }
+.power-toggle-dot {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--ok) 16%, transparent);
+  color: var(--ok);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.power-toggle.off { color: var(--bad); }
+.power-toggle.off .power-toggle-dot { background: color-mix(in srgb, var(--bad) 16%, transparent); color: var(--bad); }
+
+.metrics-row { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 20px; }
+@media (min-width: 768px) { .metrics-row { grid-template-columns: repeat(3, 1fr); } }
+
+.m-card {
+  padding: 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-bd);
+  border-radius: var(--radius-md);
+}
+.m-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.m-card-icon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--muted);
+}
+.m-label { font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.m-value {
+  margin: 8px 0 10px;
+  font-family: var(--font-mono);
+  font-size: 1.85rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.latency-bar { width: 100%; height: 3px; margin-top: 10px; border-radius: 1px; background: var(--surface-2); overflow: hidden; }
+.latency-fill { height: 100%; width: 40%; border-radius: 1px; background: var(--ok); transition: width 0.6s ease, background-color 0.6s ease; }
+.latency-fill.mid { background: var(--warn); }
+.latency-fill.high { background: var(--bad); }
+
+.status-pill { display: inline-block; padding: 3px 8px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.6875rem; font-weight: 500; letter-spacing: 0.02em; }
+.m-card .status-pill { margin-top: 10px; }
+.status-pill.online { background: color-mix(in srgb, var(--ok) 14%, transparent); color: var(--ok); }
+/* Punto indicador de «online» con pulso sutil (equivalente a animate-pulse) */
+.m-card .status-pill.online::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 7px;
+  vertical-align: middle;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse-soft 2s cubic-bezier(.4, 0, .6, 1) infinite;
+}
+@keyframes pulse-soft { 50% { opacity: 0.5; } }
+.status-pill.warn { background: color-mix(in srgb, var(--warn) 14%, transparent); color: var(--warn); }
+.status-pill.off { background: color-mix(in srgb, var(--bad) 14%, transparent); color: var(--bad); }
+
+.diag-box { padding: 16px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.diag-title { margin: 0 0 8px; color: var(--text); }
+.diag-text { margin: 0; font-family: var(--font-mono); font-size: 0.8125rem; line-height: 1.7; color: var(--muted); }
+
+.dash-cta { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; margin-top: 32px; text-align: left; }
+.dash-cta p { margin: 0; max-width: 40rem; color: var(--muted); }
+
+/* ---------- Pie de página ---------- */
+footer {
+  padding: 56px 0 28px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.footer-grid { display: grid; grid-template-columns: 1fr; gap: 36px; margin-bottom: 40px; }
+@media (min-width: 640px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 992px) {
+  .footer-grid { grid-template-columns: 1.2fr 0.8fr 1fr 1fr; gap: 40px; }
+  .footer-location { grid-column: span 2; }
+}
+.footer-grid h4 { margin: 0 0 14px; color: var(--muted); font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; }
+.footer-about + h4 { margin-top: 24px; }
+.footer-brand { margin-bottom: 16px; }
+footer .brand-text { font-size: 1.05rem; font-weight: 700; letter-spacing: 0.08em; color: var(--text); }
+.footer-about { margin: 0; font-size: 0.875rem; }
+.footer-about strong, .footer-address strong { color: var(--text); font-weight: 600; }
+.footer-list { list-style: none; margin: 0; padding: 0; line-height: 2.2; }
+.footer-list a { color: var(--muted); transition: color 0.15s ease; }
+.footer-list a:hover { color: var(--text); }
+.footer-address { margin: 12px 0; font-size: 0.875rem; color: var(--muted); }
+.footer-address a { color: var(--accent); }
+.footer-address a:hover { text-decoration: underline; }
+
+.social-links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.social-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+.social-icon:hover { color: var(--text); border-color: var(--border-strong); background: var(--surface-2); }
+
+.map-card { overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-2); }
+.map-card iframe { display: block; width: 100%; height: 160px; border: 0; }
+
+.footer-bottom { padding-top: 20px; border-top: 1px solid var(--border); text-align: center; font-size: 0.8125rem; }
+
+/* ---------- Aviso de carrito ---------- */
+.cart-notification {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 20px;
+  z-index: 1000;
+  display: none;
+  padding: 12px 18px;
+  border-radius: var(--radius-sm);
+  background: var(--text);
+  color: var(--on-solid);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+  animation: slideUp 0.25s ease both;
+}
+@media (min-width: 640px) { .cart-notification { left: auto; right: 24px; bottom: 24px; text-align: left; } }
+@keyframes slideUp { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* ---------- Volver arriba ---------- */
+.scrolltop {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  z-index: 999;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity 0.2s ease, transform 0.2s ease, border-color 0.15s ease;
+}
+.scrolltop.show { opacity: 1; pointer-events: auto; transform: none; }
+.scrolltop:hover { border-color: var(--border-strong); }
+
+/* ---------- Revelado al hacer scroll ---------- */
+.reveal { opacity: 0; transform: translateY(12px); transition: opacity 0.5s ease, transform 0.5s ease; }
+.reveal.is-visible { opacity: 1; transform: none; }
+
+/* ---------- Botón de tema (oscuro / claro) ---------- */
+.theme-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.theme-toggle:hover { border-color: var(--border-strong); background: var(--surface-2); }
+.theme-toggle svg { position: absolute; transition: transform 0.4s cubic-bezier(.2, .8, .2, 1), opacity 0.25s ease; }
+.theme-toggle .icon-moon { opacity: 0; transform: rotate(-90deg) scale(0.5); }
+html[data-theme="light"] .theme-toggle .icon-sun { opacity: 0; transform: rotate(90deg) scale(0.5); }
+html[data-theme="light"] .theme-toggle .icon-moon { opacity: 1; transform: none; }
+
+/* Transición suave de colores solo mientras se cambia de tema */
+html.theme-switching *, html.theme-switching *::before, html.theme-switching *::after {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, fill 0.3s ease, stroke 0.3s ease !important;
+}
+
+/* ---------- NetChecker Dashboard a pantalla completa ---------- */
+html.dash-open, html.dash-open body { overflow: hidden; }
+
+.dash-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  animation: dashIn 0.25s ease both;
+}
+.dash-overlay[hidden] { display: none; }
+@keyframes dashIn { from { opacity: 0; } to { opacity: 1; } }
+
+.dash-overlay-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  flex-shrink: 0;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+@media (min-width: 641px) { .dash-overlay-bar { padding: 10px 20px; } }
+.dash-overlay-title { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.dash-overlay-mark { width: 32px; height: 32px; flex-shrink: 0; border-radius: 9px; }
+.dash-overlay-title span { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+.dash-overlay-title b { font-family: var(--font-display); font-size: 1rem; letter-spacing: -0.02em; }
+.dash-overlay-title small { display: none; color: var(--muted); font-size: 0.75rem; }
+.dash-overlay-actions { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.dash-overlay-newtab { display: none; color: var(--muted); font-size: 0.8125rem; font-weight: 500; white-space: nowrap; }
+.dash-overlay-newtab:hover { color: var(--text); }
+@media (min-width: 641px) {
+  .dash-overlay-title small, .dash-overlay-newtab { display: block; }
+}
+.dash-exit { padding: 9px 14px; font-size: 0.8125rem; white-space: nowrap; }
+@media (min-width: 641px) { .dash-exit { padding: 10px 18px; font-size: 0.875rem; } }
+
+.dash-overlay-body { position: relative; flex: 1; min-height: 0; background: var(--bg); }
+.dash-overlay-body iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: transparent; }
+
+.dash-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--muted);
+  font-weight: 500;
+}
+.dash-loading[hidden] { display: none; }
+.dash-loading::before {
+  content: "";
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border);
+  border-top-color: var(--text);
+  border-radius: 50%;
+  animation: dashSpin 0.8s linear infinite;
+}
+@keyframes dashSpin { to { transform: rotate(360deg); } }
+
+/* ---------- Movimiento reducido ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  .reveal { opacity: 1; transform: none; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- SÍMBOLO DE MARCA NETCHECKER (se reutiliza en cabecera y pie): una ruta de red de tres nodos que dibuja un "check" -->
+<svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
+  <symbol id="nc-mark" viewBox="0 0 48 48">
+    <defs>
+      <linearGradient id="nc-mark-grad" x1="6" y1="4" x2="44" y2="46" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#22d3ee"/>
+        <stop offset="0.55" stop-color="#6366f1"/>
+        <stop offset="1" stop-color="#8b5cf6"/>
+      </linearGradient>
+    </defs>
+    <rect width="48" height="48" rx="13" fill="url(#nc-mark-grad)"/>
+    <rect x="0.75" y="0.75" width="46.5" height="46.5" rx="12.25" fill="none" stroke="#ffffff" stroke-opacity="0.28" stroke-width="1.5"/>
+    <path d="M12.5 25.5 L21 34 L36 14.5" fill="none" stroke="#ffffff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="12.5" cy="25.5" r="4" fill="#ffffff"/>
+    <circle cx="21" cy="34" r="4" fill="#ffffff"/>
+    <circle cx="36" cy="14.5" r="4" fill="#ffffff"/>
+    <circle cx="21" cy="34" r="1.6" fill="url(#nc-mark-grad)"/>
+  </symbol>
+</svg>
+
+<!-- TOPBAR NAVEGACIÓN ENTRE PÁGINAS -->
+<header class="topbar">
+  <div class="container nav">
+    <a href="#inicio" class="brand">
+      <!-- LOGO PROFESIONAL: marca vectorial + wordmark -->
+      <svg class="brand-logo-svg" viewBox="0 0 48 48" role="img" aria-label="Logo NetChecker"><use href="#nc-mark"/></svg>
+      <span class="brand-text-wrap">
+        <span class="brand-text"><span class="brand-part-net">Net</span>Checker</span>
+        <span class="brand-sub">por EchoWorks</span>
+      </span>
+    </a>
+
+    <nav class="nav-links" id="navLinks">
+      <a href="#inicio" class="active">Inicio</a>
+      <a href="#productos">Productos</a>
+      <a href="#vista-rapida">Vista Rápida</a>
+      <a href="#demostracion">Video &amp; Calidad</a>
+      <a href="#guion-visual">Guion Visual</a>
+      <a href="#video-monitoreo">Monitoreo en Vivo</a>
+      <a href="#index-netchecker">Live Dashboard</a>
+      <a href="#teinco-ubicacion">Ubicación TEINCO</a>
+    </nav>
+
+    <div class="nav-actions">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Cambiar a modo claro" aria-pressed="false" title="Cambiar a modo claro">
+        <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+      </button>
+      <a href="#productos" class="nav-btn">
+        <span>Comprar Ahora</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+      <button class="menu-toggle" id="menuBtn" type="button" aria-label="Abrir menú" aria-controls="navLinks">☰</button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- HERO SECTION CON IMAGEN FUTURISTA -->
+  <section id="inicio" class="hero">
+    <div class="container hero-grid">
+      <div class="hero-content">
+        <span class="eyebrow">🚀 Innovación Académica TEINCO 2026</span>
+        <h1>Diagnóstico de Red <span class="gradient-text">Futurista y En Tiempo Real</span></h1>
+        <p class="hero-desc">
+          Presentamos el ecosistema <strong>NetChecker por EchoWorks</strong>: la solución de hardware y software definitiva para monitorear latencia RTT, pérdida de paquetes y resolución DNS en salas de cómputo y laboratorios.
+        </p>
+        <div class="hero-actions">
+          <a href="#productos" class="btn-primary">
+            Adquirir Dispositivo NetChecker
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+          </a>
+          <a href="#index-netchecker" class="btn-secondary">
+            Probar Navegación Live
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+          </a>
+          <a href="NetChecker_Dashboard_Demo.html" class="btn-secondary btn-dash js-open-dashboard" id="openDashboardHero">
+            Ingresar al NetChecker Dashboard
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+
+        <!-- BARRA DE ESTADÍSTICAS DE IMPACTO -->
+        <div class="stats-bar">
+          <div class="stat-item">
+            <div class="stat-value">&lt;5s</div>
+            <div class="stat-label">Diagnóstico de fallas</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">99.9%</div>
+            <div class="stat-label">Disponibilidad monitoreada</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">24/7</div>
+            <div class="stat-label">Monitoreo continuo</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">3</div>
+            <div class="stat-label">Ediciones disponibles</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIDEO PROMOCIONAL PRINCIPAL: NETCHECKER PROMO IMPACTANTE -->
+      <div class="futuristic-showcase">
+        <div class="showcase-inner">
+          <div class="hero-video-label">Video Promocional</div>
+          <div class="live-badge-overlay">
+            <span class="pulse-dot"></span> HARDWARE ACTIVO
+          </div>
+          <video class="hero-video device-render" id="heroVideo" autoplay muted loop playsinline>
+            <source src="NetChecker_Promo_Impactante.mp4" type="video/mp4">
+            Tu navegador no soporta la reproducción de este video.
+          </video>
+          <button class="hero-sound-toggle" id="heroSoundToggle" title="Activar/silenciar sonido" aria-label="Activar o silenciar el sonido del video">
+            <svg id="soundIconOff" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+            <svg id="soundIconOn" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-hidden"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUCTOS Y TIENDA ONLINE -->
+  <section id="productos" class="section">
+    <div class="container">
+      <div class="section-title">
+        <h2>Elige Tu Edición <span class="gradient-text">NetChecker</span></h2>
+        <p>Dispositivos de monitoreo continuo y licencias de software adaptadas para estudiantes, docentes y laboratorios TEINCO.</p>
+      </div>
+
+      <div class="product-grid">
+        <!-- Producto 1 -->
+        <article class="product-card">
+          <span class="product-tag">Edición Estudiante</span>
+          <div class="product-img">
+            <img src="https://images.unsplash.com/photo-1551818014-7c8ace9c1b5c?auto=format&fit=crop&w=800&q=80" alt="NetChecker Portable USB - sonda de diagnóstico portátil" loading="lazy">
+            <span class="product-img-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M15 9h.01M9 15h6"/></svg>
+            </span>
+          </div>
+          <h3>NetChecker Portable USB</h3>
+          <p class="product-desc">Sonda USB de bolsillo con ejecutable Flask autoconfigurable para prácticas universitarias.</p>
+          <div class="product-price">$149,900 <span>COP</span></div>
+          <ul class="product-features">
+            <li>Medición ICMP/RTT ultra-rápida</li>
+            <li>Dashboard local en localhost:5000</li>
+            <li>Soporte para Python 3.12+</li>
+            <li>Garantía TEINCO de 1 año</li>
+          </ul>
+          <button class="btn-primary btn-block" type="button" onclick="addToCart('NetChecker Portable USB')">Añadir al Carrito</button>
+        </article>
+
+        <!-- Producto 2 (Destacado) -->
+        <article class="product-card product-card--featured">
+          <span class="product-tag product-tag--featured">Más Popular</span>
+          <div class="product-img">
+            <img src="https://images.unsplash.com/photo-1695668548342-c0c1ad479aee?auto=format&fit=crop&w=800&q=80" alt="NetChecker Rack Unit Lab - módulo de monitoreo para servidores" loading="lazy">
+            <span class="product-img-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            </span>
+          </div>
+          <h3>NetChecker Rack Unit Lab</h3>
+          <p class="product-desc">Módulo físico de monitoreo continuo con pantalla HUD OLED incorporada para servidores de red.</p>
+          <div class="product-price">$489,000 <span>COP</span></div>
+          <ul class="product-features">
+            <li>Display OLED de estado de red</li>
+            <li>Integración nativa con API REST</li>
+            <li>Monitoreo multi-gateway y DNS</li>
+            <li>Alerta auditiva y visual de fallas</li>
+          </ul>
+          <button class="btn-primary btn-block" type="button" onclick="addToCart('NetChecker Rack Unit Lab')">Añadir al Carrito</button>
+        </article>
+
+        <!-- Producto 3 -->
+        <article class="product-card">
+          <span class="product-tag">Empresarial / Campus</span>
+          <div class="product-img">
+            <img src="https://images.unsplash.com/photo-1666875753105-c63a6f3bdc86?auto=format&fit=crop&w=800&q=80" alt="Suite Enterprise EchoWorks - plataforma de analítica y reportes" loading="lazy">
+            <span class="product-img-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 7h-3a2 2 0 00-2 2v9a2 2 0 002 2h3a2 2 0 002-2V9a2 2 0 00-2-2zM4 7h3a2 2 0 012 2v9a2 2 0 01-2 2H4a2 2 0 01-2-2V9a2 2 0 012-2z"/><path d="M9 12h6"/></svg>
+            </span>
+          </div>
+          <h3>Suite Enterprise EchoWorks</h3>
+          <p class="product-desc">Licencia ilimitada de software de diagnóstico para facultades completas y campus universitarios.</p>
+          <div class="product-price">$1,200,000 <span>COP</span></div>
+          <ul class="product-features">
+            <li>Nodos de prueba ilimitados</li>
+            <li>Soporte técnico dedicado 24/7</li>
+            <li>Reportes exportables en PDF/Excel</li>
+            <li>Capacitación presencial en TEINCO</li>
+          </ul>
+          <button class="btn-primary btn-block" type="button" onclick="addToCart('Suite Enterprise EchoWorks')">Añadir al Carrito</button>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIDEO DESTACADO DEBAJO DE PRODUCTOS -->
+  <section id="vista-rapida" class="section">
+    <div class="container">
+      <div class="section-title">
+        <h2>Vista Rápida <span class="gradient-text">del Sistema</span></h2>
+        <p>Un vistazo directo a NetChecker en acción antes de conocer el detalle técnico completo.</p>
+      </div>
+
+      <div class="video-frame-wrap frame-narrow">
+        <div class="video-container">
+          <video controls preload="metadata" playsinline poster="guion-visual-netchecker.png">
+            <source src="NetChecker_Lumina.mp4" type="video/mp4">
+            Tu navegador no soporta la reproducción de este video.
+          </video>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN DE VIDEO Y CALIDAD DEL PRODUCTO -->
+  <section id="demostracion" class="section">
+    <div class="container">
+      <div class="section-title">
+        <h2>Demostración y <span class="gradient-text">Calidad de Producto</span></h2>
+        <p>Conoce el funcionamiento real de la suite de monitoreo NetChecker y la ambientación futurista EchoWorks.</p>
+      </div>
+
+      <div class="media-box">
+        <div>
+          <span class="eyebrow">Video Institucional TEINCO</span>
+          <h3>Presentación Multimedia del Proyecto</h3>
+          <p class="media-text">
+            Este video promocional resume el recorrido completo de <strong>NetChecker por EchoWorks</strong>: qué es, cómo diagnostica la red en tiempo real usando los protocolos ICMP, RTT, DNS y Gateway, y de qué manera se aplica hoy en los laboratorios de TEINCO. Observa cómo NetChecker reduce el tiempo de diagnóstico de fallas de red de 15 minutos a menos de 5 segundos mediante active probing y sockets ICMP.
+          </p>
+          <ul class="product-features product-features--spaced">
+            <li>Explicación completa del concepto y los servicios NetChecker</li>
+            <li>Dashboard "NetChecker Live" en funcionamiento con métricas reales</li>
+            <li>Línea de productos: Portable USB, Rack Unit Lab y Suite Enterprise</li>
+            <li>Aplicación real dentro de los laboratorios de TEINCO</li>
+          </ul>
+        </div>
+
+        <div class="video-frame-wrap">
+          <div class="video-container">
+            <video controls preload="metadata" playsinline>
+              <source src="NetChecker_Promo_Final.mp4" type="video/mp4">
+              Tu navegador no soporta la reproducción de este video.
+            </video>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GUION VISUAL DEL VIDEO PROMOCIONAL -->
+  <section id="guion-visual" class="section">
+    <div class="container">
+      <div class="section-title">
+        <h2>Guion Visual <span class="gradient-text">del Video Promocional</span></h2>
+        <p>Storyboard completo de la producción audiovisual NetChecker por EchoWorks — duración total 1:30.</p>
+      </div>
+
+      <div class="futuristic-showcase frame-wide">
+        <div class="showcase-inner">
+          <img src="guion-visual-netchecker.png" alt="Guion visual completo del video promocional NetChecker por EchoWorks: 8 escenas desde la bienvenida hasta la despedida, duración 1:30" class="device-render" loading="lazy">
+        </div>
+      </div>
+      <p class="showcase-caption">Storyboard oficial · 8 escenas · 0:00 – 1:30 · Producción NetChecker por EchoWorks</p>
+    </div>
+  </section>
+
+  <!-- VIDEO DE MONITOREO EN TIEMPO REAL NETCHECKER -->
+  <section id="video-monitoreo" class="section">
+    <div class="container">
+      <div class="section-title">
+        <h2>Monitoreo en <span class="gradient-text">Tiempo Real</span></h2>
+        <p>Grabación real del panel NetChecker ejecutando diagnóstico y monitoreo de red en vivo.</p>
+      </div>
+
+      <div class="media-box">
+        <div>
+          <span class="eyebrow">Captura de Pantalla NetChecker</span>
+          <h3>NetChecker Monitoreo en Vivo</h3>
+          <p class="media-text">
+            Mira el dashboard NetChecker en funcionamiento real, mostrando la medición de latencia, el estado del gateway y la resolución DNS mientras opera sobre la red del laboratorio.
+          </p>
+          <ul class="product-features product-features--spaced">
+            <li>Diagnóstico automático en tiempo real</li>
+            <li>Visualización de latencia RTT en vivo</li>
+            <li>Estado de conectividad Gateway/DNS</li>
+          </ul>
+        </div>
+
+        <div class="video-frame-wrap">
+          <div class="video-container">
+            <video controls preload="metadata" playsinline>
+              <source src="netchecker-monitoreo.mp4" type="video/mp4">
+              Tu navegador no soporta la reproducción de este video.
+            </video>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INTERFAZ INTEGRADA NAVEGABLE: INDEX NETCHECKER -->
+  <section id="index-netchecker" class="section">
+    <div class="container">
+      <div class="section-title">
+        <h2>Navega por la Interfaz <span class="gradient-text">NetChecker Live</span></h2>
+        <p>Prueba directamente aquí el panel de telemetría e inspección en tiempo real que incluye tu compra.</p>
+      </div>
+
+      <div class="embedded-dashboard" id="dashboardPanel">
+        <div class="dash-header">
+          <div>
+            <h3 class="dash-title">NetChecker · Telemetría en Vivo</h3>
+            <span class="dash-target mono">Target: TEINCO LAN Lab 302</span>
+          </div>
+          <div class="dash-header-actions">
+            <div class="status-pill online" id="dashStatusPill">● SISTEMA OPERATIVO</div>
+            <button class="power-toggle" id="powerToggle" title="Encender o apagar el monitoreo en vivo" aria-label="Encender o apagar el monitoreo en vivo">
+              <span class="power-toggle-dot">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v10"/><path d="M18.36 6.64a9 9 0 11-12.73 0"/></svg>
+              </span>
+              <span id="powerToggleLabel">Encendido</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="metrics-row">
+          <div class="m-card">
+            <div class="m-card-head">
+              <span class="m-card-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 9h20"/></svg>
+              </span>
+              <span class="m-label">Gateway Local (192.168.1.1)</span>
+            </div>
+            <div class="m-value" id="gwVal">14.2 ms</div>
+            <div class="latency-bar"><div class="latency-fill" id="gwBar" style="width:35%;"></div></div>
+            <span class="status-pill online" id="gwPill">0% Pérdida</span>
+          </div>
+
+          <div class="m-card">
+            <div class="m-card-head">
+              <span class="m-card-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 010 20 15 15 0 010-20z"/></svg>
+              </span>
+              <span class="m-label">Internet DNS (8.8.8.8)</span>
+            </div>
+            <div class="m-value" id="extVal">28.6 ms</div>
+            <div class="latency-bar"><div class="latency-fill" id="extBar" style="width:60%;"></div></div>
+            <span class="status-pill online" id="extPill">ONLINE</span>
+          </div>
+
+          <div class="m-card">
+            <div class="m-card-head">
+              <span class="m-card-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+              </span>
+              <span class="m-label">Resolución google.com</span>
+            </div>
+            <div class="m-value" id="dnsVal">11.0 ms</div>
+            <div class="latency-bar"><div class="latency-fill" id="dnsBar" style="width:24%;"></div></div>
+            <span class="status-pill online" id="dnsPill">142.251.211.206</span>
+          </div>
+        </div>
+
+        <div class="diag-box">
+          <h4 class="diag-title">Diagnóstico Automático del Sistema:</h4>
+          <p class="diag-text" id="diagMsg">
+            ✓ La red opera dentro de los parámetros normales. El tiempo de respuesta del gateway local y la salida WAN se encuentran optimizados.
+          </p>
+        </div>
+      </div>
+
+      <div class="dash-cta">
+        <p>¿Quieres ver el panel completo? Ingresa al NetChecker Dashboard: mediciones en vivo, pérdida de paquetes, incidentes de prueba y reportes. Para volver, usa el botón «Salir del Dashboard».</p>
+        <a href="NetChecker_Dashboard_Demo.html" class="btn-primary js-open-dashboard" id="openDashboardLive">
+          Ingresar al NetChecker Dashboard
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER CON ACCESO A REDES SOCIALES Y UBICACIÓN DE TEINCO -->
+<footer id="teinco-ubicacion">
+  <div class="container">
+    <div class="footer-grid">
+
+      <!-- COLUMNA 1: MARCA Y REDES SOCIALES -->
+      <div>
+        <div class="brand footer-brand">
+          <svg class="brand-logo-svg" viewBox="0 0 48 48" role="img" aria-label="Logo NetChecker"><use href="#nc-mark"/></svg>
+          <span class="brand-text">ECHOWORKS</span>
+        </div>
+        <p class="footer-about">
+          Desarrollado por <strong>Ernesto Nicolás Pulgarín Echeverri</strong> y <strong>Juan Pablo Martínez</strong> para la Corporación Tecnológica Industrial Colombiana (TEINCO).
+        </p>
+        
+        <!-- REDES SOCIALES -->
+        <h4>Síguenos en Redes Sociales</h4>
+        <div class="social-links">
+          <a href="https://www.facebook.com/teincoedu" target="_blank" rel="noopener" class="social-icon" title="Facebook" aria-label="Facebook">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          </a>
+          <a href="https://www.instagram.com/teincoedu" target="_blank" rel="noopener" class="social-icon" title="Instagram" aria-label="Instagram">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          </a>
+          <a href="https://x.com/teincoedu" target="_blank" rel="noopener" class="social-icon" title="X (Twitter)" aria-label="X (Twitter)">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a href="https://www.linkedin.com/school/teinco" target="_blank" rel="noopener" class="social-icon" title="LinkedIn" aria-label="LinkedIn">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+          </a>
+          <a href="https://www.youtube.com/@teincoedu" target="_blank" rel="noopener" class="social-icon" title="YouTube" aria-label="YouTube">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+          </a>
+          <a href="https://www.tiktok.com/@teincoedu" target="_blank" rel="noopener" class="social-icon" title="TikTok" aria-label="TikTok">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+          </a>
+          <a href="https://wa.me/576014856565" target="_blank" rel="noopener" class="social-icon" title="WhatsApp" aria-label="WhatsApp">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.295-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zM12.05 22c-1.9 0-3.75-.507-5.362-1.472L6.31 20.4 3 21l.615-3.194-.192-.31A9.86 9.86 0 012 12.05C2 6.51 6.53 2 12.05 2c2.66 0 5.16 1.037 7.04 2.92A9.9 9.9 0 0122 12.05C22 17.55 17.55 22 12.05 22z"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- COLUMNA 2: NAVEGACIÓN RÁPIDA -->
+      <div>
+        <h4>Navegación</h4>
+        <ul class="footer-list">
+          <li><a href="#inicio">Inicio</a></li>
+          <li><a href="#productos">Tienda de Productos</a></li>
+          <li><a href="#demostracion">Demostración Video</a></li>
+          <li><a href="#index-netchecker">Dashboard NetChecker</a></li>
+          <li><a href="#teinco-ubicacion">Sede TEINCO</a></li>
+        </ul>
+      </div>
+
+      <!-- COLUMNA 3 Y 4: UBICACIÓN INSTITUCIONAL TEINCO -->
+      <div class="footer-location">
+        <h4>Ubicación Institucional TEINCO</h4>
+        <p class="footer-address">
+          📍 <strong>Sede Principal Siete de Agosto:</strong> Av. Calle 63 No 22-39, Bogotá D.C., Colombia.<br>
+          📞 PBX: (601) 4856565 - 2851512 | 🌐 <a href="https://www.teinco.edu.co" target="_blank" rel="noopener">www.teinco.edu.co</a>
+        </p>
+
+        <!-- MAPA INTEGRADO MAPS DE TEINCO -->
+        <div class="map-card">
+          <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3976.626243888748!2d-74.07223592425883!3d4.651717842718919!2m3!1f0!0f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e3f9a5317a96dfb%3A0xb35a3a7db8e7f12e!2sTEINCO%20-%20Corporaci%C3%B3n%20Tecnol%C3%B3gica%20Industrial%20Colombiana!5e0!3m2!1ses!2sco!4v1710000000000!5m2!1ses!2sco" width="100%" height="160" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      © 2026 EchoWorks & NetChecker · Proyecto de Aula TEINCO · Todos los derechos reservados.
+    </div>
+  </div>
+</footer>
+
+<!-- NETCHECKER DASHBOARD A PANTALLA COMPLETA: se abre con «Ingresar» y se cierra con «Salir» (o la tecla Esc) -->
+<div class="dash-overlay" id="dashOverlay" role="dialog" aria-modal="true" aria-label="NetChecker Dashboard Demo" hidden>
+  <div class="dash-overlay-bar">
+    <div class="dash-overlay-title">
+      <svg class="dash-overlay-mark" viewBox="0 0 48 48" role="img" aria-label="Logo NetChecker"><use href="#nc-mark"/></svg>
+      <span><b>NetChecker Dashboard</b><small>Demo con datos simulados · TEINCO</small></span>
+    </div>
+    <div class="dash-overlay-actions">
+      <a class="dash-overlay-newtab" href="NetChecker_Dashboard_Demo.html" target="_blank" rel="noopener">Abrir en pestaña nueva ↗</a>
+      <button type="button" class="btn-primary dash-exit" id="dashExit" title="Salir del Dashboard (Esc)">← Salir del Dashboard</button>
+    </div>
+  </div>
+  <div class="dash-overlay-body">
+    <div class="dash-loading" id="dashLoading">Cargando NetChecker Dashboard…</div>
+    <iframe id="dashFrame" title="NetChecker Dashboard Demo" data-src="NetChecker_Dashboard_Demo.html?ovl=1"></iframe>
+  </div>
+</div>
+
+<!-- NOTIFICACIÓN DE CARRITO DE COMPRAS -->
+<div id="cartNotification" class="cart-notification" role="status" aria-live="polite">
+  🛒 ¡Producto añadido al carrito exitosamente!
+</div>
+
+<!-- BOTÓN FLOTANTE VOLVER ARRIBA -->
+<button class="scrolltop" id="scrollTopBtn" title="Volver arriba" aria-label="Volver arriba">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 15l-6-6-6 6"/></svg>
+</button>
+
+<script>
+// Lógica de Menú Móvil y Navegación entre páginas
+document.addEventListener('DOMContentLoaded', function() {
+  const menuBtn = document.getElementById('menuBtn');
+  const navLinks = document.getElementById('navLinks');
+
+  if(menuBtn && navLinks) {
+    menuBtn.addEventListener('click', () => {
+      navLinks.classList.toggle('active');
+    });
+    // Cierra el menú móvil al seleccionar un enlace
+    navLinks.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => navLinks.classList.remove('active'));
+    });
+  }
+
+  // Control de sonido del video promocional principal (hero)
+  // Audio calmado: volumen moderado y entrada suave (fade-in) al activar el sonido,
+  // en vez de un salto brusco de volumen que resulte saturante.
+  const heroVideo = document.getElementById('heroVideo');
+  const heroSoundToggle = document.getElementById('heroSoundToggle');
+  const soundIconOff = document.getElementById('soundIconOff');
+  const soundIconOn = document.getElementById('soundIconOn');
+  const CALM_VOLUME = 0.55;
+  let fadeTimer = null;
+
+  function fadeVideoVolume(video, target, durationMs) {
+    if (fadeTimer) clearInterval(fadeTimer);
+    const steps = 20;
+    const stepTime = durationMs / steps;
+    const start = video.volume;
+    const delta = (target - start) / steps;
+    let i = 0;
+    fadeTimer = setInterval(() => {
+      i++;
+      video.volume = Math.min(1, Math.max(0, start + delta * i));
+      if (i >= steps) clearInterval(fadeTimer);
+    }, stepTime);
+  }
+
+  if (heroVideo && heroSoundToggle) {
+    heroVideo.volume = CALM_VOLUME;
+    heroSoundToggle.addEventListener('click', () => {
+      const turningOn = heroVideo.muted;
+      if (turningOn) {
+        heroVideo.volume = 0;
+        heroVideo.muted = false;
+        fadeVideoVolume(heroVideo, CALM_VOLUME, 900); // entrada suave y tranquila
+      } else {
+        heroVideo.muted = true;
+      }
+      soundIconOff.style.display = heroVideo.muted ? 'block' : 'none';
+      soundIconOn.style.display = heroVideo.muted ? 'none' : 'block';
+    });
+  }
+
+  // Volumen más calmado por defecto en los demás videos de la página (menos saturante al reproducir)
+  document.querySelectorAll('.video-container video').forEach(v => { v.volume = CALM_VOLUME; });
+
+  // Botón flotante "volver arriba"
+  const scrollTopBtn = document.getElementById('scrollTopBtn');
+  if (scrollTopBtn) {
+    window.addEventListener('scroll', () => {
+      scrollTopBtn.classList.toggle('show', window.scrollY > 500);
+    });
+    scrollTopBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  // Barra activa de navegación según la sección visible
+  const navAnchors = document.querySelectorAll('.nav-links a');
+  const sections = document.querySelectorAll('main section[id]');
+  const navObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navAnchors.forEach(a => a.classList.remove('active'));
+        const activeLink = document.querySelector(`.nav-links a[href="#${entry.target.id}"]`);
+        if (activeLink) activeLink.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-40% 0px -55% 0px' });
+  sections.forEach(s => navObserver.observe(s));
+
+  // Revelado progresivo de contenido al hacer scroll (excluye el hero para no afectar el autoplay)
+  const revealTargets = document.querySelectorAll(
+    '.section-title, .product-grid, .media-box, #vista-rapida .video-frame-wrap, #guion-visual .futuristic-showcase, #guion-visual .showcase-caption, .embedded-dashboard'
+  );
+  revealTargets.forEach(el => el.classList.add('reveal'));
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  revealTargets.forEach(el => revealObserver.observe(el));
+
+  // Simulación dinámica de métricas en la interfaz NetChecker Live,
+  // con barras de intensidad coloreadas y botón de encendido/apagado
+  let dashboardOn = true;
+  const maxLatency = 45; // ms de referencia para la barra de intensidad
+
+  function setBar(barEl, valueMs) {
+    const pct = Math.min(100, (valueMs / maxLatency) * 100);
+    barEl.style.width = pct + '%';
+    barEl.classList.remove('mid', 'high');
+    if (valueMs > 30) barEl.classList.add('high');
+    else if (valueMs > 15) barEl.classList.add('mid');
+  }
+
+  function tickMetrics() {
+    if (!dashboardOn) return;
+    const gw = Math.random() * 8 + 10;
+    const ext = Math.random() * 15 + 20;
+    const dns = Math.random() * 5 + 8;
+
+    document.getElementById('gwVal').textContent = gw.toFixed(1) + ' ms';
+    document.getElementById('extVal').textContent = ext.toFixed(1) + ' ms';
+    document.getElementById('dnsVal').textContent = dns.toFixed(1) + ' ms';
+
+    setBar(document.getElementById('gwBar'), gw);
+    setBar(document.getElementById('extBar'), ext);
+    setBar(document.getElementById('dnsBar'), dns);
+  }
+  tickMetrics();
+  const metricsInterval = setInterval(tickMetrics, 3000);
+
+  // Botón de encendido/apagado del panel NetChecker Live
+  const powerToggle = document.getElementById('powerToggle');
+  const powerToggleLabel = document.getElementById('powerToggleLabel');
+  const dashboardPanel = document.getElementById('dashboardPanel');
+  const dashStatusPill = document.getElementById('dashStatusPill');
+  const diagMsg = document.getElementById('diagMsg');
+
+  if (powerToggle) {
+    powerToggle.addEventListener('click', () => {
+      dashboardOn = !dashboardOn;
+      powerToggle.classList.toggle('off', !dashboardOn);
+      powerToggleLabel.textContent = dashboardOn ? 'Encendido' : 'Apagado';
+      dashboardPanel.classList.toggle('is-paused', !dashboardOn);
+
+      if (dashboardOn) {
+        dashStatusPill.className = 'status-pill online';
+        dashStatusPill.textContent = '● SISTEMA OPERATIVO';
+        diagMsg.textContent = '✓ La red opera dentro de los parámetros normales. El tiempo de respuesta del gateway local y la salida WAN se encuentran optimizados.';
+      } else {
+        dashStatusPill.className = 'status-pill off';
+        dashStatusPill.textContent = '■ MONITOREO PAUSADO';
+        diagMsg.textContent = 'El monitoreo en vivo está apagado. Presiona "Encendido" para reanudar la telemetría en tiempo real.';
+      }
+    });
+  }
+});
+
+// Función de respuesta interactiva para botones de compra
+function addToCart(productName) {
+  const notif = document.getElementById('cartNotification');
+  notif.textContent = `🛒 ¡Has agregado "${productName}" a tu carrito!`;
+  notif.style.display = 'block';
+
+  setTimeout(() => {
+    notif.style.display = 'none';
+  }, 3500);
+}
+</script>
+
+<!-- CAMBIO DE TEMA OSCURO / CLARO (recuerda la elección del visitante) -->
+<script>
+(function () {
+  var root = document.documentElement;
+  var btn = document.getElementById('themeToggle');
+  if (!btn) return;
+
+  function isLight() { return root.getAttribute('data-theme') === 'light'; }
+  function sync() {
+    var light = isLight();
+    var label = light ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro';
+    btn.setAttribute('aria-pressed', String(light));
+    btn.setAttribute('aria-label', label);
+    btn.setAttribute('title', label);
+  }
+  sync();
+
+  btn.addEventListener('click', function () {
+    var next = isLight() ? 'dark' : 'light';
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduce) {
+      root.classList.add('theme-switching');
+      setTimeout(function () { root.classList.remove('theme-switching'); }, 450);
+    }
+    if (next === 'light') { root.setAttribute('data-theme', 'light'); }
+    else { root.removeAttribute('data-theme'); }
+    try { localStorage.setItem('nc-theme', next); } catch (e) {}
+    sync();
+  });
+})();
+</script>
+
+<!-- INGRESAR / SALIR DEL NETCHECKER DASHBOARD -->
+<script>
+(function () {
+  var overlay = document.getElementById('dashOverlay');
+  var frame = document.getElementById('dashFrame');
+  var loading = document.getElementById('dashLoading');
+  var exitBtn = document.getElementById('dashExit');
+  if (!overlay || !frame) return;
+  var root = document.documentElement;
+  var lastOpener = null;
+
+  function openDash(ev) {
+    if (ev) ev.preventDefault();
+    if (!overlay.hidden) return;
+    lastOpener = document.activeElement;
+    // Pausa los videos de la página mientras se usa el Dashboard
+    document.querySelectorAll('video').forEach(function (v) {
+      v._ncWasPlaying = !v.paused;
+      if (!v.paused) v.pause();
+    });
+    loading.hidden = false;
+    frame.onload = function () { loading.hidden = true; };
+    frame.src = frame.getAttribute('data-src');   // cada ingreso empieza el demo desde cero
+    overlay.hidden = false;
+    root.classList.add('dash-open');
+    exitBtn.focus({ preventScroll: true });
+  }
+
+  function closeDash() {
+    if (overlay.hidden) return;
+    overlay.hidden = true;
+    root.classList.remove('dash-open');
+    frame.onload = null;
+    frame.src = 'about:blank';
+    // Reanuda los videos que se estaban reproduciendo
+    document.querySelectorAll('video').forEach(function (v) {
+      if (v._ncWasPlaying) { var p = v.play(); if (p && p.catch) p.catch(function () {}); }
+      v._ncWasPlaying = false;
+    });
+    if (lastOpener && lastOpener.focus) lastOpener.focus({ preventScroll: true });
+  }
+
+  document.querySelectorAll('.js-open-dashboard').forEach(function (a) { a.addEventListener('click', openDash); });
+  exitBtn.addEventListener('click', closeDash);
+  document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && !overlay.hidden) closeDash(); });
+  // Los botones «Salir» que están dentro del propio Dashboard avisan a esta página
+  window.addEventListener('message', function (ev) {
+    if (ev.source !== frame.contentWindow) return;
+    if (ev.data && ev.data.nc === 'exit') closeDash();
+  });
+
+  // Fotos de productos: si no hay Internet, se muestra un fondo de marca
+  document.querySelectorAll('.product-img img').forEach(function (img) {
+    function fail() { img.parentNode.classList.add('is-fallback'); }
+    img.addEventListener('error', fail);
+    if (img.complete && img.naturalWidth === 0 && img.getAttribute('src')) fail();
+  });
+})();
+</script>
+
+</body>
+</html>
